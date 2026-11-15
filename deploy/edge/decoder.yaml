@@ -24,29 +24,20 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 999
-        runAsGroup: 999
+        runAsUser: 10001
+        runAsGroup: 10001
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: mind
           image: first-bite-edge
-          # A file replay is over in a second, and mind exits when the file
-          # ends whether or not its sink has delivered. So: wait until the
-          # receiver accepts a connection from this pod, then replay. A
-          # decoder on a live interface keeps running and needs none of this.
-          command:
-            - bash
-            - -c
-            - |
-              for attempt in $(seq 1 60); do
-                if timeout 2 bash -c 'exec 3<>/dev/tcp/receiver.record-consumers.svc.cluster.local./8080' 2>/dev/null; then
-                  echo "the receiver accepts connections (attempt $attempt)"
-                  exec mind --pcap-file /examples/harbour-buoys.pcap --dictionary /dictionary
-                fi
-                sleep 1
-              done
-              echo "the receiver did not accept a connection in 60 attempts" >&2; exit 1
+          # mind replays the capture, then gives the rest sink up to
+          # --drain-seconds (30 by default) to deliver what it published, and
+          # logs "sink receiver: <n> delivered, <n> failed, <n> abandoned".
+          # It exits 3 when the sink abandoned records or delivered none, so
+          # with backoffLimit 0 the Job fails when records did not arrive.
+          command: ["mind"]
+          args: ["--pcap-file", "/examples/harbour-buoys.pcap", "--dictionary", "/dictionary"]
           env:
             - name: SUBSCRIBER_CONFIG_PATH
               value: /config/subscribers.yml
