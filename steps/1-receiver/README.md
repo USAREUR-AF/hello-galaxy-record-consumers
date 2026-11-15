@@ -43,19 +43,22 @@ is adding `tools/replay-records.py` for the same purpose.
 ```text
 [1] The tests: no database, no network
     $ docker run --rm --network none hello-galaxy-record-consumers:local-test
-    │ 18 passed in 0.52s
+    │ ..................                                                       [100%]
+    │ 18 passed in 2.18s
 
 [2] The schema file is what the dictionary exports
     $ bite schema dictionaries/harbour-buoy | diff - samples/harbour-buoy.schema.json
     │ no difference: 3 messages, 11561 bytes
 
 [3] Start PostgreSQL and the receiver
+    The receiver is given one file about the message set: what `bite schema dictionaries/harbour-buoy` printed.
     $ SCHEMA_FILE=samples/harbour-buoy.schema.json python -m record_consumers.receiver
     │ receiver: 3 message types from /schema/harbour-buoy.schema.json; tables: buoy__position, buoy__sea_state, buoy__status
     │ receiver: listening on 0.0.0.0:8080
 
 [4] The tables it made
     $ psql -c '\d buoy__status'
+    │                                    Table "public.buoy__status"
     │      Column      |           Type           | Collation | Nullable |           Default
     │ -----------------+--------------------------+-----------+----------+------------------------------
     │  rec_id          | bigint                   |           | not null | generated always as identity
@@ -74,23 +77,56 @@ is adding `tools/replay-records.py` for the same purpose.
     │  position_fix    | boolean                  |           |          |
     │  sequence_number | bigint                   |           |          |
     │  uptime          | bigint                   |           |          |
+    │ Indexes:
+    │     "buoy__status_pkey" PRIMARY KEY, btree (rec_id)
+    │     "buoy__status_source_time" btree (rec_site, rec_source, rec_captured_at DESC)
 
 [5] Post the version 1 sample: every value is text
+    $ tools/post-records.py http://receiver:8080/records samples/records-v1.jsonl
     │ 18 posted: 18 x 201
 
 [6] Post the version 2 sample: values keep their type
+    $ tools/post-records.py http://receiver:8080/records samples/records-v2.jsonl
     │ 18 posted: 18 x 201
 
 [7] The same row from either version
+    $ psql -c 'SELECT rec_version, rec_source, latitude, longitude, drift_speed, antenna_height FROM buoy__position …'
     │  rec_version | rec_site  |         rec_source          |  latitude  |  longitude  | drift_speed | antenna_height
     │ -------------+-----------+-----------------------------+------------+-------------+-------------+----------------
     │            1 | harbour-3 | 198.51.100.10 buoy_number=7 | 44.5012345 | -30.2543210 |        0.35 |           -1.5
     │            2 | harbour-3 | 198.51.100.10 buoy_number=7 | 44.5012345 | -30.2543210 |        0.35 |           -1.5
+    │ (2 rows)
+    │   message  | count | sources
+    │ -----------+-------+---------
+    │  position  |    12 |       2
+    │  sea_state |    12 |       2
+    │  status    |    12 |       2
+    │ (3 rows)
 
 [8] Records the receiver does not store
+    A value the schema does not allow, a message the dictionary does not define, and a packet that was not decoded.
+    $ tools/post-records.py http://receiver:8080/records .run/1-refused.jsonl
     │ 422 {"stored":false,"reason":"battery_voltage: 'flat' is not valid under any of the given schemas"}
     │ 422 {"stored":false,"reason":"no schema for BUOY/Mooring Log"}
     │ 3 posted: 1 x 202, 2 x 422
+
+[9] Verify
+    ✓ the tests pass
+    ✓ none fails
+    ✓ the schema in samples/ and in deploy/base/ is what bite schema prints
+    ✓ a scaled field became a double precision column
+    ✓ a labelled field became a text column
+    ✓ a flag became a boolean column
+    ✓ all 18 version 1 records were stored
+    ✓ all 18 version 2 records were stored
+    ✓ the version 1 row holds the typed position
+    ✓ the version 2 row holds the same
+    ✓ each table holds 12 rows from 2 sources
+    ✓ a value of the wrong type is refused, naming the field
+    ✓ a message with no schema is refused
+    ✓ an undecoded packet is accepted and not stored
+
+✓ step complete — every assertion held.
 ```
 
 `rec_site` is the record's `data_source_geo_location`, which the decoder's

@@ -50,6 +50,23 @@ bin/hello-consumers 5-aks
     │ PGSSLMODE: verify-full
     │ service.beta.kubernetes.io/azure-load-balancer-internal: "true"
     │ type: LoadBalancer
+
+[3] Verify
+    ✓ the Bicep file builds
+    ✓ with no error or warning
+    ✓ it declares the cluster
+    ✓ the registry
+    ✓ and the managed PostgreSQL server
+    ✓ the database password is a secure parameter with no default
+    ✓ only the name prefix and that password must be given
+    ✓ the aks overlay renders
+    ✓ it contains no Secret
+    ✓ the database connection verifies the server's certificate
+    ✓ the receiver is reached through an internal load balancer
+    ✓ only the decoder's address range may post
+    not run: az deployment group create, and anything on a real AKS cluster
+
+✓ step complete — every assertion held.
 ```
 
 ## The order of a deployment
