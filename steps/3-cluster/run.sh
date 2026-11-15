@@ -44,11 +44,18 @@ hc_step "The decoder: first-bite replays the capture and posts each record"
 hc_say "first-bite's rest sink, configured in deploy/edge/subscribers.yml, posts to the receiver's Service."
 hc_cmd "kubectl apply -k deploy/edge"
 hc_kubectl apply -k "$HC_ROOT/deploy/edge" 2>&1 | hc_show
-hc_cmd "kubectl -n record-edge wait --for=condition=complete job/decoder"
-JOB="$(hc_kubectl -n record-edge wait --for=condition=complete job/decoder --timeout=180s 2>&1)"
-printf '%s\n' "$JOB" | hc_show
+hc_say "The Job ends with mind: complete when mind exits 0, failed when it exits 3 because records were not delivered."
+hc_cmd "kubectl -n record-edge get job/decoder -o jsonpath='succeeded={.status.succeeded} failed={.status.failed}'"
+JOB=""
+for _ in $(seq 1 180); do
+  JOB="$(hc_kubectl -n record-edge get job/decoder -o jsonpath='succeeded={.status.succeeded} failed={.status.failed}' 2>&1)"
+  case "$JOB" in *"succeeded=1"*|*"failed=1"*) break ;; esac
+  sleep 1
+done
+EXIT_CODE="$(hc_kubectl -n record-edge get pods -l job-name=decoder -o jsonpath='{.items[0].status.containerStatuses[0].state.terminated.exitCode}' 2>&1)"
+printf '%s; mind exited %s\n' "$JOB" "$EXIT_CODE" | hc_show
 DECODER="$(hc_kubectl -n record-edge logs job/decoder 2>&1)"
-printf '%s\n' "$DECODER" | grep -o 'done: .*\|subscriber receiver.*\|rest.*' | cut -c1-160 | hc_show
+printf '%s\n' "$DECODER" | grep -o 'done: .*\|sink receiver: .*\|rest.*' | cut -c1-160 | hc_show
 sleep 2
 RECEIVED="$(hc_kubectl -n record-consumers logs deployment/receiver 2>&1 | grep -c '^POST /records 201')"
 hc_note "the receiver's log has $RECEIVED lines \"POST /records 201\""
@@ -70,6 +77,8 @@ hc_step "Verify"
 hc_assert_contains "PostgreSQL, the receiver and the board rolled out" "$ROLLOUT" 'deployment "board" successfully rolled out'
 hc_assert_contains "the receiver made its tables from the schema in the ConfigMap" "$(hc_kubectl -n record-consumers logs deployment/receiver 2>&1)" "tables: buoy__position, buoy__sea_state, buoy__status"
 hc_assert_contains "the decoder decoded all 18 frames of the capture" "$DECODER" "done: 18 frames, 18 records, 18 decoded"
+hc_assert_contains "the decoder's sink delivered all 18 before mind exited" "$DECODER" "sink receiver: 18 delivered, 0 failed, 0 abandoned"
+hc_assert_contains "the Job completed: mind exited 0" "$JOB; $EXIT_CODE" "succeeded=1 failed=; 0"
 hc_assert_ok "the receiver stored 18 records posted by first-bite" test "$RECEIVED" -eq 18
 hc_assert_contains "the board shows three message types from each of two buoys" "$LATEST" "6 entries"
 hc_assert_contains "each with its three records, from the site the decoder named" "$LATEST" "BUOY/Sea State | harbour-3 | 198.51.100.11 buoy_number=3 | 3 records"

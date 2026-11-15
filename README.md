@@ -42,7 +42,7 @@ Cursor-on-Target path take other parts of the same job.
 |---|---|---|---|
 | [**1 receiver**](steps/1-receiver/) | tables made from the schema; records of both versions stored as the same row; a record the schema does not allow refused | Docker | 18 tests pass; 36 of 36 records stored; version 1 and version 2 give the same row; two bad records refused with the reason |
 | [**2 board**](steps/2-board/) | the latest record per source and message type, stale sources marked; a database role that can only read | Docker | 6 rows, 3 stale; an insert by the board's role is refused |
-| [**3 cluster**](steps/3-cluster/) | a kind cluster; the consumers from the Kustomize overlay; first-bite as the decoder, posting through its `rest` sink | Linux, kind | first-bite decoded 18 frames, the receiver stored 18, the board shows 6 rows |
+| [**3 cluster**](steps/3-cluster/) | a kind cluster; the consumers from the Kustomize overlay; first-bite as the decoder, posting through its `rest` sink | Linux, kind | first-bite decoded 18 frames, its sink delivered 18 and the Job completed, the receiver stored 18, the board shows 6 rows |
 | [**4 policy**](steps/4-policy/) | who may post and who may read, each tried from a namespace with and without the grant; Secret references; pod security | the cluster of step 3 | 17 checks: every request without a grant gets no answer; a pod that asks for root is refused |
 | [**5 aks**](steps/5-aks/) | a Bicep file for a cluster, a registry and managed PostgreSQL, and the overlay for it | builds and renders only | the file builds; the overlay renders; neither holds a secret value |
 
@@ -80,7 +80,7 @@ and `.run/`. Step 4 uses the cluster step 3 leaves running.
 
 | What | Pin | Change it in |
 |---|---|---|
-| first-bite | the published image of release candidate `1.0.1-rc.1`, by digest | [`FIRST_BITE_IMAGE`](FIRST_BITE_IMAGE). Release 1.1.0 changes the record to typed values (version 2); the receiver already takes both, and step 3's last column then reads `record version 2` |
+| first-bite | the published image of release `1.1.0`, by the digest of its multi-arch index | [`FIRST_BITE_IMAGE`](FIRST_BITE_IMAGE) |
 | Python and PostgreSQL images | `python:3.13-slim`, `postgres:17-alpine`, by digest | [`app/Dockerfile`](app/Dockerfile), `HC_POSTGRES_IMAGE` in [`lib/hello-consumers.sh`](lib/hello-consumers.sh), [`postgres.yaml`](deploy/overlays/local/postgres/postgres.yaml) |
 | Python packages | by version and hash | [`app/requirements.txt`](app/requirements.txt), compiled from `requirements.in` |
 | kind, kubectl, bicep; the kind node image | by SHA-256; by digest | [`tools/pins`](tools/pins), `HC_NODE_IMAGE` |
