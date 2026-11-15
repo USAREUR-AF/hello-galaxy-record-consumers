@@ -1,0 +1,66 @@
+# Who may talk to what. Everything is refused unless a policy below allows it.
+# Reading the records is something the owner of the data grants: a namespace
+# may post only when the owner labels it record-consumers/posts-records, and
+# may open the board only when the owner labels it record-consumers/reads-board.
+# The overlay adds the policy for the database, which differs by where it runs.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: name-resolution
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: receiver-accepts-records
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: receiver
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              record-consumers/posts-records: "true"
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: board-serves-readers
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: board
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              record-consumers/reads-board: "true"
+      ports:
+        - protocol: TCP
+          port: 8080

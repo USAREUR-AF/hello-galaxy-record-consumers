@@ -1,0 +1,20 @@
+{
+    "interface": "BUOY",
+    "payload_hex": "030870661a865979edf78e9643879ff1",
+    "expect": {
+        "message_type": "Position",
+        "fields": {
+            "message_id": "3",
+            "message_length": "8",
+            "buoy_number": "7",
+            "sequence_number": "102",
+            "latitude": "44.5012345",
+            "longitude": "-30.2543210",
+            "drift_course": "135",
+            "drift_speed": "0.35",
+            "satellites_in_view": "9",
+            "antenna_height": "-1.5"
+        }
+    },
+    "note": "HB-ICD-001 revision A, appendix A.3."
+}

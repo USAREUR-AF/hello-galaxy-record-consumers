@@ -1,0 +1,30 @@
+# The receiver and the board, with nothing that depends on where they run.
+# An overlay adds the database (or where to find one), the images and who may
+# reach the two services. The Secret `record-consumers-db` is not here and not
+# in any overlay: it is made in the cluster, never committed. See README.md.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: record-consumers
+resources:
+  - namespace.yaml
+  - receiver.yaml
+  - board.yaml
+  - networkpolicy.yaml
+configMapGenerator:
+  # What `bite schema <dictionary>` printed. The receiver makes its tables
+  # from this file and validates every record against it. A new dictionary
+  # is a new file here; the name gets a hash, so the pods restart with it.
+  - name: record-schema
+    files:
+      - harbour-buoy.schema.json
+  - name: record-consumers-settings
+    literals:
+      - SCHEMA_FILE=/schema/harbour-buoy.schema.json
+      - SOURCE_FIELDS=buoy_number
+      - READER_ROLE=board
+      - STALE_AFTER_SECONDS=120
+      - PGDATABASE=records
+      - PGPORT=5432
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: record-consumers

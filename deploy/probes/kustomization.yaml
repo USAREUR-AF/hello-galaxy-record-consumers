@@ -1,0 +1,11 @@
+# Two namespaces that steps 3 and 4 look from. record-viewer has been granted
+# the board; record-stranger has been granted nothing. Each holds one idle pod
+# to run a request from.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - probes.yaml
+images:
+  - name: record-consumers
+    newName: hello-galaxy-record-consumers
+    newTag: local

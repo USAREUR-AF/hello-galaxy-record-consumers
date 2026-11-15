@@ -1,0 +1,28 @@
+# AKS: the base, with the images in a registry, the database outside the
+# cluster and the decoder outside the cluster. Not deployed: rendered and
+# checked only. The values marked "yours" are placeholders from the
+# documentation ranges; replace each with an output of deploy/aks/main.bicep
+# or a fact of your network.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: record-consumers
+resources:
+  - ../../base
+  - networkpolicy.yaml
+images:
+  - name: record-consumers
+    newName: example.azurecr.io/hello-galaxy-record-consumers # yours: output registryLoginServer
+    newTag: "0.1.0" # yours; better, a digest
+configMapGenerator:
+  - name: record-consumers-database
+    literals:
+      - PGHOST=records.example.private.postgres.database.azure.com # yours: output postgresHost
+      # The server's certificate is checked against the system's roots and
+      # its name against PGHOST.
+      - PGSSLMODE=verify-full
+      - PGSSLROOTCERT=system
+patches:
+  - path: receiver-service.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: record-consumers

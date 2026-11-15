@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# hello-consumers — build the images and run a step of hello-galaxy-record-consumers.
+#
+#   bin/hello-consumers build          build the consumer image, its test image and the decoder image
+#   bin/hello-consumers <step> [args]  run one step
+#   bin/hello-consumers all            run every step in order
+#   bin/hello-consumers list
+#   bin/hello-consumers clean          delete the cluster, the containers, the images and .run/
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+STEPS="$ROOT/steps"
+usage() {
+  cat <<USAGE
+hello-galaxy-record-consumers — first-bite's records received, stored and shown, on Kubernetes
+
+usage:
+  bin/hello-consumers build
+  bin/hello-consumers <step> [args...]
+  bin/hello-consumers all
+  bin/hello-consumers list
+  bin/hello-consumers clean
+
+steps:
+USAGE
+  for d in "$STEPS"/*/; do
+    name="$(basename "$d")"; title="$(sed -n 's/^# *//p' "$d/README.md" 2>/dev/null | head -1)"
+    printf '  %-12s %s\n' "$name" "$title"
+  done
+  cat <<USAGE
+
+steps 1 and 2 need Docker. Steps 3 and 4 make and use a local cluster (kind);
+step 4 uses the cluster step 3 leaves running. Step 5 checks the AKS files and
+deploys nothing.
+USAGE
+}
+resolve() {
+  local q="$1" m
+  [ -d "$STEPS/$q" ] && { echo "$q"; return 0; }
+  for d in "$STEPS"/*/; do
+    m="$(basename "$d")"
+    case "$m" in "$q"-*|*"$q"*) echo "$m"; return 0 ;; esac
+  done
+  return 1
+}
+build() {
+  local engine="${CONTAINER_ENGINE:-docker}" base
+  base="$(tr -d '[:space:]' < "$ROOT/FIRST_BITE_IMAGE")"
+  "$engine" build -q -f "$ROOT/app/Dockerfile" -t hello-galaxy-record-consumers:local "$ROOT" >/dev/null
+  echo "built hello-galaxy-record-consumers:local (the receiver and the board)"
+  "$engine" build -q -f "$ROOT/app/Dockerfile" --target test -t hello-galaxy-record-consumers:local-test "$ROOT" >/dev/null
+  echo "built hello-galaxy-record-consumers:local-test (the same, with the tests)"
+  "$engine" build -q -f "$ROOT/edge/Dockerfile" --build-arg "FIRST_BITE_IMAGE=$base" -t hello-galaxy-record-consumers-edge:local "$ROOT" >/dev/null
+  echo "built hello-galaxy-record-consumers-edge:local (first-bite from $base, with the dictionary and the sample capture)"
+}
+clean() {
+  local engine="${CONTAINER_ENGINE:-docker}" kind
+  kind="$(find "$ROOT/.run/bin" -name 'kind-*' -perm -u+x 2>/dev/null | head -1)"
+  if [ -n "$kind" ]; then "$kind" delete cluster --name hc-record-consumers >/dev/null 2>&1 || true; fi
+  for name in hc-postgres hc-receiver hc-board; do "$engine" rm -f "$name" >/dev/null 2>&1 || true; done
+  "$engine" network rm hc-net >/dev/null 2>&1 || true
+  "$engine" rmi hello-galaxy-record-consumers:local hello-galaxy-record-consumers:local-test \
+    hello-galaxy-record-consumers-edge:local >/dev/null 2>&1 || true
+  rm -rf "$ROOT/.run"
+  echo "removed the kind cluster hc-record-consumers, the hc-* containers, the hc-net network, the three images and .run/"
+}
+[ "$#" -eq 0 ] && { usage; exit 0; }
+case "$1" in
+  -h|--help|help) usage; exit 0 ;;
+  list) for d in "$STEPS"/*/; do basename "$d"; done; exit 0 ;;
+  build) build; exit 0 ;;
+  clean) clean; exit 0 ;;
+  all) shift; rc=0; for d in "$STEPS"/*/; do bash "$d/run.sh" "$@" || rc=1; done; exit $rc ;;
+esac
+name="$(resolve "$1")" || { echo "unknown step: $1" >&2; usage >&2; exit 2; }
+shift
+exec bash "$STEPS/$name/run.sh" "$@"

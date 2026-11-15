@@ -1,0 +1,89 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shape:
+    name: scripts, manifests and structure are well formed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: shellcheck the scripts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # SC1090/SC1091: drivers source the lib at runtime. SC2034: cross-file globals.
+          shellcheck -e SC1090,SC1091,SC2034 lib/hello-consumers.sh steps/*/run.sh bin/hello-consumers
+          shellcheck deploy/overlays/local/postgres/init-roles.sh
+
+      - name: every step has a README and an executable run.sh
+        run: |
+          rc=0
+          for d in steps/*/; do
+            [ -f "$d/README.md" ] || { echo "missing README: $d"; rc=1; }
+            [ -x "$d/run.sh" ]   || { echo "not executable: $d/run.sh"; rc=1; }
+            bash -n "$d/run.sh"  || { echo "syntax error: $d/run.sh"; rc=1; }
+          done
+          for f in tools/*.py bin/hello-consumers deploy/overlays/local/postgres/init-roles.sh; do
+            [ -x "$f" ] || { echo "not executable: $f"; rc=1; }
+          done
+          exit $rc
+
+      - name: python compiles
+        run: |
+          rc=0
+          for f in $(git ls-files '*.py'); do python3 -m py_compile "$f" || rc=1; done
+          exit $rc
+
+      - name: the sample capture is what its tool writes
+        run: |
+          python3 tools/make-sample-pcap.py /tmp/harbour-buoys.pcap
+          cmp /tmp/harbour-buoys.pcap examples/harbour-buoys.pcap
+
+      - name: every overlay renders and none holds a Secret
+        run: |
+          for d in deploy/overlays/local deploy/overlays/aks deploy/edge deploy/probes; do
+            kubectl kustomize "$d" > /tmp/render.yaml
+            if grep -q '^kind: Secret' /tmp/render.yaml; then echo "$d renders a Secret"; exit 1; fi
+          done
+
+  steps:
+    name: build the images and run every step
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: build the images
+        run: bin/hello-consumers build
+
+      - name: step 1 — the receiver
+        run: NO_COLOR=1 bin/hello-consumers 1-receiver
+
+      - name: step 2 — the latest-status board
+        run: NO_COLOR=1 bin/hello-consumers 2-board
+
+      - name: step 3 — on Kubernetes (kind)
+        run: NO_COLOR=1 bin/hello-consumers 3-cluster
+
+      - name: step 4 — who may post, who may read
+        run: NO_COLOR=1 bin/hello-consumers 4-policy
+
+      - name: step 5 — the AKS path (built and rendered; nothing is deployed)
+        run: NO_COLOR=1 bin/hello-consumers 5-aks
+
+      - name: cluster state
+        if: failure()
+        run: |
+          k=".run/bin/kubectl-v1.37.0 --kubeconfig .run/kubeconfig"
+          $k get pods -A -o wide || true
+          $k -n record-consumers describe pods | tail -n 80 || true
+          $k -n record-consumers logs deployment/receiver --tail 40 || true
+          $k -n record-edge logs job/decoder --tail 40 || true

@@ -1,0 +1,31 @@
+{
+    "description": "Harbour buoy to shore station: status and measurements.",
+    "source": {
+        "section": "2"
+    },
+    "protocol": {
+        "network": "ip",
+        "transport": "udp"
+    },
+    "port": 47200,
+    "icd_numbering": {
+        "word_bits": 16,
+        "bit0": "lsb",
+        "first_word": 1,
+        "first_bit": 0,
+        "word_order": "big"
+    },
+    "message_type": {
+        "start": 0,
+        "stop": 8,
+        "values": {
+            "1": "Status",
+            "2": "Sea State",
+            "3": "Position"
+        }
+    },
+    "message_length": {
+        "start": 8,
+        "stop": 16
+    }
+}

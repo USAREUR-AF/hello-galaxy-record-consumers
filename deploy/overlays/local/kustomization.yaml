@@ -1,0 +1,24 @@
+# A local cluster made by kind: the base, plus PostgreSQL in the cluster and
+# the images that `bin/hello-consumers build` made and step 3 loaded.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: record-consumers
+resources:
+  - ../../base
+  - postgres/postgres.yaml
+  - postgres/networkpolicy.yaml
+images:
+  - name: record-consumers
+    newName: hello-galaxy-record-consumers
+    newTag: local
+configMapGenerator:
+  - name: record-consumers-database
+    literals:
+      - PGHOST=postgres
+      - PGSSLMODE=disable
+  - name: postgres-init
+    files:
+      - postgres/init-roles.sh
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: record-consumers

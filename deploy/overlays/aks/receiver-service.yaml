@@ -1,0 +1,15 @@
+# The decoder is beside the tap, outside the cluster. It reaches the receiver
+# through a load balancer that has an address inside the virtual network only.
+# externalTrafficPolicy Local keeps the decoder's address as the source the
+# NetworkPolicy sees.
+apiVersion: v1
+kind: Service
+metadata:
+  name: receiver
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  loadBalancerSourceRanges:
+    - 203.0.113.16/28 # yours: where the decoder posts from

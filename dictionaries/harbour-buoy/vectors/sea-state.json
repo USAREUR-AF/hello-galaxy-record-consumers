@@ -1,0 +1,20 @@
+{
+    "interface": "BUOY",
+    "payload_hex": "02067065ff833ad18e992730",
+    "expect": {
+        "message_type": "Sea State",
+        "fields": {
+            "message_id": "2",
+            "message_length": "6",
+            "buoy_number": "7",
+            "sequence_number": "101",
+            "water_temperature": "-1.25",
+            "significant_wave_height": "2.35",
+            "wave_period": "8.5",
+            "wind_direction": "285",
+            "wind_speed": "12.5",
+            "air_pressure": "1003.2"
+        }
+    },
+    "note": "HB-ICD-001 revision A, appendix A.2."
+}

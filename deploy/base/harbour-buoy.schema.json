@@ -1,0 +1,552 @@
+{
+  "BUOY/Position": {
+    "$id": "harbour-buoy/BUOY/Position",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Sent every minute, and at once when the mooring alarm is raised.",
+    "properties": {
+      "antenna_height": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Height of the antenna above the WGS 84 ellipsoid.",
+        "x-bits": [
+          116,
+          128
+        ],
+        "x-unit": "m"
+      },
+      "buoy_number": {
+        "anyOf": [
+          {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Buoy that sent the message, 1 to 15.",
+        "x-bits": [
+          16,
+          20
+        ],
+        "x-unit": "1"
+      },
+      "drift_course": {
+        "anyOf": [
+          {
+            "maximum": 511,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Direction the buoy is moving, clockwise from true north.",
+        "x-bits": [
+          96,
+          105
+        ],
+        "x-unit": "deg"
+      },
+      "drift_speed": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Speed of the buoy over the ground.",
+        "x-bits": [
+          105,
+          112
+        ],
+        "x-unit": "m/s"
+      },
+      "latitude": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "WGS 84, positive north.",
+        "x-bits": [
+          32,
+          64
+        ],
+        "x-unit": "deg"
+      },
+      "longitude": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "WGS 84, positive east.",
+        "x-bits": [
+          64,
+          96
+        ],
+        "x-unit": "deg"
+      },
+      "message_id": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Identifies the message. See Table 5-1.",
+        "x-bits": [
+          0,
+          8
+        ],
+        "x-unit": "1"
+      },
+      "message_length": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Length of the message in 16-bit words.",
+        "x-bits": [
+          8,
+          16
+        ],
+        "x-unit": "words"
+      },
+      "satellites_in_view": {
+        "anyOf": [
+          {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Satellites the receiver is tracking.",
+        "x-bits": [
+          112,
+          116
+        ],
+        "x-unit": "1"
+      },
+      "sequence_number": {
+        "anyOf": [
+          {
+            "maximum": 4095,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+        "x-bits": [
+          20,
+          32
+        ],
+        "x-unit": "1"
+      }
+    },
+    "title": "Position",
+    "type": "object",
+    "x-dictionary-version": "1.0.0"
+  },
+  "BUOY/Sea State": {
+    "$id": "harbour-buoy/BUOY/Sea State",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Sent every minute with the buoy's measurements of the water and the air.",
+    "properties": {
+      "air_pressure": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Pressure of the air at the buoy.",
+        "x-bits": [
+          80,
+          96
+        ],
+        "x-unit": "hPa"
+      },
+      "buoy_number": {
+        "anyOf": [
+          {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Buoy that sent the message, 1 to 15.",
+        "x-bits": [
+          16,
+          20
+        ],
+        "x-unit": "1"
+      },
+      "message_id": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Identifies the message. See Table 5-1.",
+        "x-bits": [
+          0,
+          8
+        ],
+        "x-unit": "1"
+      },
+      "message_length": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Length of the message in 16-bit words.",
+        "x-bits": [
+          8,
+          16
+        ],
+        "x-unit": "words"
+      },
+      "sequence_number": {
+        "anyOf": [
+          {
+            "maximum": 4095,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+        "x-bits": [
+          20,
+          32
+        ],
+        "x-unit": "1"
+      },
+      "significant_wave_height": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Mean height of the highest third of the waves.",
+        "x-bits": [
+          48,
+          58
+        ],
+        "x-unit": "m"
+      },
+      "water_temperature": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Temperature of the water one metre below the surface.",
+        "x-bits": [
+          32,
+          48
+        ],
+        "x-unit": "degC"
+      },
+      "wave_period": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Mean period of the waves.",
+        "x-bits": [
+          58,
+          64
+        ],
+        "x-unit": "s"
+      },
+      "wind_direction": {
+        "anyOf": [
+          {
+            "maximum": 511,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Direction the wind blows from, clockwise from true north.",
+        "x-bits": [
+          64,
+          73
+        ],
+        "x-unit": "deg"
+      },
+      "wind_speed": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Mean wind speed three metres above the water.",
+        "x-bits": [
+          73,
+          80
+        ],
+        "x-unit": "m/s"
+      }
+    },
+    "title": "Sea State",
+    "type": "object",
+    "x-dictionary-version": "1.0.0"
+  },
+  "BUOY/Status": {
+    "$id": "harbour-buoy/BUOY/Status",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "description": "Sent every ten seconds while the buoy is powered.",
+    "properties": {
+      "battery_voltage": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Voltage of the main battery.",
+        "x-bits": [
+          37,
+          48
+        ],
+        "x-unit": "V"
+      },
+      "buoy_number": {
+        "anyOf": [
+          {
+            "maximum": 15,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Buoy that sent the message, 1 to 15.",
+        "x-bits": [
+          16,
+          20
+        ],
+        "x-unit": "1"
+      },
+      "lamp_on": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "1 when the navigation lamp is lit.",
+        "x-bits": [
+          34,
+          35
+        ]
+      },
+      "message_id": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Identifies the message. See Table 5-1.",
+        "x-bits": [
+          0,
+          8
+        ],
+        "x-unit": "1"
+      },
+      "message_length": {
+        "anyOf": [
+          {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Length of the message in 16-bit words.",
+        "x-bits": [
+          8,
+          16
+        ],
+        "x-unit": "words"
+      },
+      "mooring_alarm": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "1 when the buoy is outside its watch circle.",
+        "x-bits": [
+          35,
+          36
+        ]
+      },
+      "operating_mode": {
+        "anyOf": [
+          {
+            "enum": [
+              "Low Power",
+              "Reporting",
+              "Standby"
+            ]
+          },
+          {
+            "maximum": 3,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "What the buoy is doing.",
+        "x-bits": [
+          32,
+          34
+        ]
+      },
+      "position_fix": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "1 when the receiver has a position fix.",
+        "x-bits": [
+          36,
+          37
+        ]
+      },
+      "sequence_number": {
+        "anyOf": [
+          {
+            "maximum": 4095,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+        "x-bits": [
+          20,
+          32
+        ],
+        "x-unit": "1"
+      },
+      "uptime": {
+        "anyOf": [
+          {
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Minutes since the buoy was powered.",
+        "x-bits": [
+          48,
+          64
+        ],
+        "x-unit": "min"
+      }
+    },
+    "title": "Status",
+    "type": "object",
+    "x-dictionary-version": "1.0.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+    "interface": "BUOY",
+    "payload_hex": "010470646cec05a0",
+    "expect": {
+        "message_type": "Status",
+        "fields": {
+            "message_id": "1",
+            "message_length": "4",
+            "buoy_number": "7",
+            "sequence_number": "100",
+            "operating_mode": "Reporting",
+            "lamp_on": "true",
+            "mooring_alarm": "false",
+            "position_fix": "true",
+            "battery_voltage": "12.60",
+            "uptime": "1440"
+        }
+    },
+    "note": "HB-ICD-001 revision A, appendix A.1."
+}

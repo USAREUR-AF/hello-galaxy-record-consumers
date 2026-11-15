@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: record-consumers
+  labels:
+    # The API server refuses a pod here that runs as root, can gain privileges,
+    # keeps a capability or has no seccomp profile.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest

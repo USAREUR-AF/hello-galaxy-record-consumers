@@ -1,0 +1,93 @@
+{
+    "description": "Sent every minute, and at once when the mooring alarm is raised.",
+    "source": {
+        "section": "5.4",
+        "table": "5-4"
+    },
+    "declared_bits": 128,
+    "fields": {
+        "message_id": {
+            "start": 0,
+            "stop": 8,
+            "unit": "1",
+            "description": "Identifies the message. See Table 5-1.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "message_length": {
+            "start": 8,
+            "stop": 16,
+            "unit": "words",
+            "description": "Length of the message in 16-bit words.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "buoy_number": {
+            "start": 16,
+            "stop": 20,
+            "unit": "1",
+            "description": "Buoy that sent the message, 1 to 15.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "sequence_number": {
+            "start": 20,
+            "stop": 32,
+            "unit": "1",
+            "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "latitude": {
+            "start": 32,
+            "stop": 64,
+            "type": "int",
+            "scale": 1e-7,
+            "unit": "deg",
+            "description": "WGS 84, positive north."
+        },
+        "longitude": {
+            "start": 64,
+            "stop": 96,
+            "type": "int",
+            "scale": 1e-7,
+            "unit": "deg",
+            "description": "WGS 84, positive east."
+        },
+        "drift_course": {
+            "start": 96,
+            "stop": 105,
+            "unit": "deg",
+            "description": "Direction the buoy is moving, clockwise from true north."
+        },
+        "drift_speed": {
+            "start": 105,
+            "stop": 112,
+            "scale": 0.05,
+            "unit": "m/s",
+            "description": "Speed of the buoy over the ground."
+        },
+        "satellites_in_view": {
+            "start": 112,
+            "stop": 116,
+            "unit": "1",
+            "description": "Satellites the receiver is tracking."
+        },
+        "antenna_height": {
+            "start": 116,
+            "stop": 128,
+            "type": "int",
+            "scale": 0.1,
+            "unit": "m",
+            "description": "Height of the antenna above the WGS 84 ellipsoid."
+        }
+    }
+}

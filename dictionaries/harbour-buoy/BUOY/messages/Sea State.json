@@ -1,0 +1,92 @@
+{
+    "description": "Sent every minute with the buoy's measurements of the water and the air.",
+    "source": {
+        "section": "5.3",
+        "table": "5-3"
+    },
+    "declared_bits": 96,
+    "fields": {
+        "message_id": {
+            "start": 0,
+            "stop": 8,
+            "unit": "1",
+            "description": "Identifies the message. See Table 5-1.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "message_length": {
+            "start": 8,
+            "stop": 16,
+            "unit": "words",
+            "description": "Length of the message in 16-bit words.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "buoy_number": {
+            "start": 16,
+            "stop": 20,
+            "unit": "1",
+            "description": "Buoy that sent the message, 1 to 15.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "sequence_number": {
+            "start": 20,
+            "stop": 32,
+            "unit": "1",
+            "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "water_temperature": {
+            "start": 32,
+            "stop": 48,
+            "type": "int",
+            "scale": 0.01,
+            "unit": "degC",
+            "description": "Temperature of the water one metre below the surface."
+        },
+        "significant_wave_height": {
+            "start": 48,
+            "stop": 58,
+            "scale": 0.01,
+            "unit": "m",
+            "description": "Mean height of the highest third of the waves."
+        },
+        "wave_period": {
+            "start": 58,
+            "stop": 64,
+            "scale": 0.5,
+            "unit": "s",
+            "description": "Mean period of the waves."
+        },
+        "wind_direction": {
+            "start": 64,
+            "stop": 73,
+            "unit": "deg",
+            "description": "Direction the wind blows from, clockwise from true north."
+        },
+        "wind_speed": {
+            "start": 73,
+            "stop": 80,
+            "scale": 0.5,
+            "unit": "m/s",
+            "description": "Mean wind speed three metres above the water."
+        },
+        "air_pressure": {
+            "start": 80,
+            "stop": 96,
+            "scale": 0.1,
+            "unit": "hPa",
+            "description": "Pressure of the air at the buoy."
+        }
+    }
+}

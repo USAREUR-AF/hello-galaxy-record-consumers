@@ -1,0 +1,99 @@
+# The board: the latest record per source and message type, as a page and as
+# JSON. It reads the database as the role `board`, which can only read.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: board
+  labels:
+    app.kubernetes.io/name: board
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: board
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: board
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: board
+          image: record-consumers
+          command: ["python", "-m", "record_consumers.board"]
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: record-consumers-settings
+            # Where the database is: PGHOST, PGSSLMODE. Made by the overlay.
+            - configMapRef:
+                name: record-consumers-database
+          env:
+            - name: PGUSER
+              value: board
+            # The password is a reference to a key of a Secret that exists
+            # only in the cluster. No value is in this repository.
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: record-consumers-db
+                  key: board-password
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 192Mi
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: schema
+          configMap:
+            name: record-schema
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: board
+  labels:
+    app.kubernetes.io/name: board
+spec:
+  selector:
+    app.kubernetes.io/name: board
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

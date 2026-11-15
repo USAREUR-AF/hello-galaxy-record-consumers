@@ -1,0 +1,17 @@
+# The decoder's side: a namespace the owner of the data has labelled as one
+# that may post records, and first-bite replaying the sample capture in it.
+# In a deployment the decoder is beside the tap, outside the cluster; here it
+# is a Job so that the whole path runs on one machine.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: record-edge
+resources:
+  - decoder.yaml
+images:
+  - name: first-bite-edge
+    newName: hello-galaxy-record-consumers-edge
+    newTag: local
+configMapGenerator:
+  - name: decoder-sinks
+    files:
+      - subscribers.yml

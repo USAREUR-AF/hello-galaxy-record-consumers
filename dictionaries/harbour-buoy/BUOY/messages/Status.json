@@ -1,0 +1,91 @@
+{
+    "description": "Sent every ten seconds while the buoy is powered.",
+    "source": {
+        "section": "5.2",
+        "table": "5-2"
+    },
+    "declared_bits": 64,
+    "fields": {
+        "message_id": {
+            "start": 0,
+            "stop": 8,
+            "unit": "1",
+            "description": "Identifies the message. See Table 5-1.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "message_length": {
+            "start": 8,
+            "stop": 16,
+            "unit": "words",
+            "description": "Length of the message in 16-bit words.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "buoy_number": {
+            "start": 16,
+            "stop": 20,
+            "unit": "1",
+            "description": "Buoy that sent the message, 1 to 15.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "sequence_number": {
+            "start": 20,
+            "stop": 32,
+            "unit": "1",
+            "description": "Incremented by the buoy for each message; wraps from 4095 to 0.",
+            "source": {
+                "section": "4",
+                "table": "4-1"
+            }
+        },
+        "operating_mode": {
+            "start": 32,
+            "stop": 34,
+            "values": {
+                "0": "Standby",
+                "1": "Reporting",
+                "2": "Low Power"
+            },
+            "description": "What the buoy is doing."
+        },
+        "lamp_on": {
+            "start": 34,
+            "stop": 35,
+            "type": "bool",
+            "description": "1 when the navigation lamp is lit."
+        },
+        "mooring_alarm": {
+            "start": 35,
+            "stop": 36,
+            "type": "bool",
+            "description": "1 when the buoy is outside its watch circle."
+        },
+        "position_fix": {
+            "start": 36,
+            "stop": 37,
+            "type": "bool",
+            "description": "1 when the receiver has a position fix."
+        },
+        "battery_voltage": {
+            "start": 37,
+            "stop": 48,
+            "scale": 0.01,
+            "unit": "V",
+            "description": "Voltage of the main battery."
+        },
+        "uptime": {
+            "start": 48,
+            "stop": 64,
+            "unit": "min",
+            "description": "Minutes since the buoy was powered."
+        }
+    }
+}

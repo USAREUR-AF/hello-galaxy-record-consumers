@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: record-edge
+  labels:
+    # The grant: pods of this namespace may post to the receiver.
+    record-consumers/posts-records: "true"
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: decoder
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: decoder
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mind
+          image: first-bite-edge
+          # A file replay is over in a second, and mind exits when the file
+          # ends whether or not its sink has delivered. So: wait until the
+          # receiver accepts a connection from this pod, then replay. A
+          # decoder on a live interface keeps running and needs none of this.
+          command:
+            - bash
+            - -c
+            - |
+              for attempt in $(seq 1 60); do
+                if timeout 2 bash -c 'exec 3<>/dev/tcp/receiver.record-consumers.svc.cluster.local./8080' 2>/dev/null; then
+                  echo "the receiver accepts connections (attempt $attempt)"
+                  exec mind --pcap-file /examples/harbour-buoys.pcap --dictionary /dictionary
+                fi
+                sleep 1
+              done
+              echo "the receiver did not accept a connection in 60 attempts" >&2; exit 1
+          env:
+            - name: SUBSCRIBER_CONFIG_PATH
+              value: /config/subscribers.yml
+            # Copied into every record; the receiver stores it as the site.
+            - name: DATA_SOURCE_GEO_LOCATION
+              value: harbour-3
+            - name: RUST_LOG
+              value: info
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          configMap:
+            name: decoder-sinks

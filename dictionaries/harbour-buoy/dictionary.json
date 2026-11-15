@@ -1,0 +1,9 @@
+{
+    "name": "harbour-buoy",
+    "version": "1.0.0",
+    "description": "Synthetic example: a harbour buoy reporting to its shore station, transcribed from the invented document HB-ICD-001 in icd/.",
+    "source": {
+        "document": "HB-ICD-001",
+        "revision": "A"
+    }
+}

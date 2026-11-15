@@ -1,0 +1,15 @@
+# first-bite's sinks, named by SUBSCRIBER_CONFIG_PATH. One `rest` sink: every
+# record is posted to the receiver as JSON.
+subscribers:
+  - name: receiver
+    subscriber_type: "rest"
+    subtype: "record-consumers"
+    zmq_url: "127.0.0.1"
+    zmq_port: 12000
+    topics:
+      - "*"
+    # The trailing dot makes the name fully qualified, so the resolver asks for
+    # it once and does not first try it under every search domain of the node.
+    endpoint_url: "receiver.record-consumers.svc.cluster.local."
+    endpoint_port: 8080
+    endpoint_path: "/records"
