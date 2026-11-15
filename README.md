@@ -138,6 +138,14 @@ FINDINGS.md               behaviours of first-bite, kind and PostgreSQL a script
 
 One of the Hello Galaxy series of runnable goat demonstrations.
 
+## Acknowledgements
+
+The receiver and the latest-status board follow a design by Scarlett Swerdlow,
+who built the first services that consumed first-bite's records: a status
+store with a board of every source's latest report, and a service that
+delivered Cursor-on-Target to TAK servers. This repository rebuilds that
+design so that it reads its tables from a dictionary's schema.
+
 ## Licence
 
 `hello-galaxy-record-consumers` was written by U.S. Federal government employees. In the U.S. it is not subject to copyright and is in the public domain; in countries where copyright is recognized, it is released under the [Apache License 2.0](LICENSE). See [INTENT.md](INTENT.md).
