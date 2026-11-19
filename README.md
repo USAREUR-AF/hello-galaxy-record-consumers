@@ -1,5 +1,10 @@
 # hello-galaxy-record-consumers
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/owner-grants-dark.svg">
+  <img src="docs/figures/owner-grants-light.svg" width="760" alt="In a kind cluster, first-bite in the namespace record-edge posts its decoded records to the receiver, which makes its tables from the dictionary's JSON Schema and writes PostgreSQL; the board reads with a role that cannot write and serves record-viewer; the namespace record-stranger, with no label, gets no answer from the receiver, the board or the database.">
+</picture>
+
 **first-bite decodes binary messages beside a tap and posts each record over
 HTTP. What receives them? Five runnable steps: a receiver that makes its
 tables from the dictionary, a latest-status board, both on Kubernetes, the
