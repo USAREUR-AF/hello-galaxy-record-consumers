@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Draw the repository's figures from the tree.
 
     python3 -I docs/figures/make-figures.py           # write docs/figures/*.svg
@@ -31,8 +30,8 @@ THEMES = {
             "--good:#6fc480; --good-bg:#1b2e20; --warn:#e2b04e; --warn-bg:#32291a; --info:#86b3ea; "
             "--info-bg:#1a2636; --crit:#f08b80; --crit-bg:#3a1f1f; --mute:#9ba2ac; --mute-bg:#24262b;",
 }
-SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif"
-MONO = "ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace"
+SANS = "'Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif"
+MONO = "Menlo,Consolas,'Liberation Mono',monospace"
 CLASSES = """
 .t{fill:var(--ink)} .tq{fill:var(--quiet)} .ta{fill:var(--accent)} .tg{fill:var(--good)}
 .tw{fill:var(--warn)} .ti{fill:var(--info)} .tc{fill:var(--crit)} .tm{fill:var(--mute)} .ton{fill:var(--on-accent)}
@@ -42,7 +41,7 @@ CLASSES = """
 .bxc{fill:var(--crit-bg);stroke:var(--crit);stroke-width:1.25} .bxm{fill:var(--mute-bg);stroke:var(--mute);stroke-width:1.25}
 .bxd{fill:var(--paper);stroke:var(--line);stroke-width:1.25;stroke-dasharray:5 4}
 .bxz{fill:none;stroke:var(--accent);stroke-width:1.25;stroke-dasharray:6 4}
-.ln{stroke:var(--line);stroke-width:1.5;fill:none} .lna{stroke:var(--accent);stroke-width:2;fill:none}
+.ln{stroke:var(--line);stroke-width:1.5;fill:none} .lna{stroke:var(--accent);stroke-width:2.25;fill:none}
 .lng{stroke:var(--good);stroke-width:2;fill:none} .lnw{stroke:var(--warn);stroke-width:2;fill:none}
 .lnc{stroke:var(--crit);stroke-width:2;fill:none} .lnx{stroke:var(--crit);stroke-width:2;fill:none;stroke-dasharray:4 5}
 .lnd{stroke:var(--line);stroke-width:1.25;fill:none;stroke-dasharray:6 5} .lnr{stroke:var(--rule);stroke-width:1;fill:none}
@@ -53,7 +52,8 @@ CLASSES = """
 HEAD = {"ln": "fl", "lna": "fa", "lng": "fg", "lnw": "fw", "lnc": "fc", "lnx": "fc", "lnd": "fl"}
 
 TITLE = 20      # the finding, top left
-LABEL = 16      # a box's name
+LABEL = 15      # a box's name
+SUB = 15        # the line under the title
 BODY = 14       # everything else; never smaller
 
 
@@ -97,7 +97,7 @@ def wrap(s, width, size, mono=False, bold=False):
 class Fig:
     def __init__(self, w, h, title, alt):
         self.w, self.h, self.alt, self.parts = w, h, alt, []
-        self.text(20, 38, title, TITLE, bold=True, role="title")
+        self.text(24, 38, title, TITLE, bold=True, role="title")
 
     def add(self, s):
         self.parts.append(s)
@@ -111,6 +111,12 @@ class Fig:
         c = cls + (" mono" if mono else "")
         self.add('<text x="%s" y="%s" class="%s" font-size="%s"%s%s%s>%s</text>'
                  % (n(x), n(y), c, n(size), a, b, r, escape(s)))
+
+    def sub(self, s):
+        """The line under the title."""
+        if tw(s, SUB) > self.w - 48:
+            raise SystemExit("subtitle too long: %r" % s)
+        self.text(24, 66, s, SUB, "tq")
 
     def lines(self, x, y, rows, size=BODY, lead=1.45, **kw):
         for i, r in enumerate(rows):
@@ -137,13 +143,13 @@ class Fig:
 
     def dot(self, x, y, label, cls="fa"):
         """A numbered stage dot, as in every Hello Galaxy figure."""
-        self.circle(x, y, 13, cls)
-        self.text(x, y + 4.8, str(label), 14, "ton", "middle", bold=True)
+        self.circle(x, y, 15, cls)
+        self.text(x, y + 4.6, str(label), 13, "ton", "middle", bold=True)
 
     def path(self, d, cls="ln"):
         self.add('<path d="%s" class="%s"/>' % (d, cls))
 
-    def arrow(self, pts, cls="ln", head=True, size=9):
+    def arrow(self, pts, cls="ln", head=True, size=10):
         """A polyline through pts, with a filled head at the last point."""
         (x1, y1), (x2, y2) = pts[-2], pts[-1]
         if head:
@@ -152,7 +158,7 @@ class Fig:
             ux, uy = dx / L, dy / L
             bx, by = x2 - ux * size, y2 - uy * size
             pts = pts[:-1] + [(bx + ux, by + uy)]
-            px, py = -uy * size * 0.5, ux * size * 0.5
+            px, py = -uy * size * 0.5, ux * size * 0.5  # 10 long by 10 wide
             self.add('<path d="M%s %sL%s %sL%s %sz" class="%s"/>'
                      % (n(x2), n(y2), n(bx + px), n(by + py), n(bx - px), n(by - py), HEAD.get(cls, "fl")))
         d = "M" + "L".join("%s %s" % (n(x), n(y)) for x, y in pts)
@@ -258,8 +264,8 @@ def fig_owner_grants():
             "the board reads with a role that cannot write and serves %s; the namespace %s, "
             "with no label, gets no answer from the receiver, the board or the database."
             % (F["edge"], F["viewer"], F["stranger"]))
-    f.text(20, 66, "Step 3 runs it in a kind cluster; step 4 tries every path with and without "
-                   "the grant.", BODY, "tq")
+    f.sub("Step 3 runs it in a kind cluster; step 4 tries every path with and without "
+                   "the grant.")
 
     # the owner's namespace
     SW, GAP = 176, 66
